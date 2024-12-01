@@ -1,4 +1,4 @@
-from aocd import data
+from aocd import data, submit
 
 
 def get_first_digit_character(input: str) -> str:
@@ -17,4 +17,4 @@ def get_calibration_value(input: str) -> int:
 data = data.splitlines()
 result = sum([get_calibration_value(input) for input in data])
 
-print(result)
+submit(result)
