@@ -39,7 +39,6 @@ def right_diagonal_matches() -> int:
 
             if entry == WORD or entry == WORD[::-1]:
                 matches += 1
-            print(entry)
     return matches
 
 
