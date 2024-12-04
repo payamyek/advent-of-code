@@ -13,7 +13,6 @@ def horizontal_matches() -> int:
             entry = "".join(CROSSWORD[i][j : j + 4])
             if entry == WORD or entry == WORD[::-1]:
                 matches += 1
-            # print(entry)
     return matches
 
 
@@ -27,7 +26,6 @@ def vertical_matches() -> int:
 
             if entry == WORD or entry == WORD[::-1]:
                 matches += 1
-            # print(entry)
     return matches
 
 
