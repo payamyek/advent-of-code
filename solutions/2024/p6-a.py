@@ -1,4 +1,4 @@
-from aocd import data
+from aocd import data, submit
 
 
 # ---------- CONSTANTS - START ----------
@@ -122,4 +122,4 @@ while (move := move_outcome(guard_row, guard_col)) != MOVE_OUTCOME_GUARD_FREE:
         turn_right_ninety_degrees(guard_row, guard_col)
 
 
-print(*GRID, sep="\n")
+submit(sum([row.count(VISITED_SPOT) for row in GRID]) + 1)
