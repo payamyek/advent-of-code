@@ -17,8 +17,8 @@ def disk_map_to_block_map(disk_map: str) -> List[int]:
     return block_map
 
 
-def find_rightmost_block_index(block_map: List[int], last_block_id=-1) -> int:
-    start_index = last_block_id - 1 if last_block_id != -1 else len(block_map) - 1
+def find_rightmost_block_index(block_map: List[int], last_block_index=-1) -> int:
+    start_index = last_block_index - 1 if last_block_index != -1 else len(block_map) - 1
 
     for index in range(start_index, -1, -1):
         if block_map[index] != -1:
