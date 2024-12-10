@@ -42,7 +42,7 @@ def find_leftmost_free_disk_slot(
     disk_slots: List[DiskSlot], disk_slot_to_move: DiskSlot
 ) -> Union[DiskSlot, None]:
     for disk_slot in disk_slots:
-        if disk_slot.value == -1 and disk_slot.span == disk_slot_to_move.span:
+        if disk_slot.value == -1 and disk_slot.span >= disk_slot_to_move.span:
             return disk_slot
     return None
 
@@ -50,7 +50,7 @@ def find_leftmost_free_disk_slot(
 def compute_checksum(block_map: List[int]) -> int:
     disk_slots = find_disk_slots(block_map)
 
-    for disk_slot in reversed(find_disk_slots(block_map)):
+    for index, disk_slot in reversed(list(enumerate(disk_slots))):
         if disk_slot.value == -1:
             continue
 
