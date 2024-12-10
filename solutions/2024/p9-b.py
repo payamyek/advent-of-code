@@ -1,14 +1,14 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 from aocd import data
 import itertools
 
-data = "12345"
+data = "2333133121414131402"
 
 FREE_SPACE = -1
 
 
-@dataclass(frozen=True)
+@dataclass
 class DiskSlot:
     index: int
     span: int
@@ -27,39 +27,6 @@ def disk_map_to_block_map(disk_map: str) -> List[int]:
     return block_map
 
 
-def find_rightmost_block_index(block_map: List[int], last_block_index=-1) -> int:
-    start_index = last_block_index - 1 if last_block_index != -1 else len(block_map) - 1
-
-    for index in range(start_index, -1, -1):
-        if block_map[index] != -1:
-            return index
-    return -1
-
-
-def compute_checksum(block_map: List[int]) -> int:
-    block_map = block_map.copy()
-    rightmost_block_index = -1
-
-    total = 0
-
-    for index, block_id in enumerate(block_map):
-        if block_id != -1:
-            total += index * block_id
-            continue
-
-        rightmost_block_index = find_rightmost_block_index(
-            block_map, rightmost_block_index
-        )
-
-        if rightmost_block_index == -1 or rightmost_block_index <= index:
-            break
-
-        total += block_map[rightmost_block_index] * index
-        block_map[rightmost_block_index] = FREE_SPACE
-
-    return total
-
-
 def find_disk_slots(block_map: List[int]) -> List[DiskSlot]:
     disk_slots = []
     index = 0
@@ -71,9 +38,29 @@ def find_disk_slots(block_map: List[int]) -> List[DiskSlot]:
     return disk_slots
 
 
-block_map = disk_map_to_block_map(data)
-checksum = compute_checksum(block_map)
-disk_slots = find_disk_slots(block_map)
+def find_leftmost_free_disk_slot(
+    disk_slots: List[DiskSlot], disk_slot_to_move: DiskSlot
+) -> Union[DiskSlot, None]:
+    for disk_slot in disk_slots:
+        if disk_slot.value == -1 and disk_slot.span == disk_slot_to_move.span:
+            return disk_slot
+    return None
 
-print(block_map)
-print(disk_slots)
+
+def compute_checksum(block_map: List[int]) -> int:
+    disk_slots = find_disk_slots(block_map)
+
+    for disk_slot in reversed(find_disk_slots(block_map)):
+        if disk_slot.value == -1:
+            continue
+
+        free_disk_slot = find_leftmost_free_disk_slot(disk_slots, disk_slot)
+
+        if free_disk_slot is None:
+            continue
+
+        print(f"{disk_slot} can be moved to {free_disk_slot} ")
+
+
+block_map = disk_map_to_block_map(data)
+compute_checksum(block_map)
