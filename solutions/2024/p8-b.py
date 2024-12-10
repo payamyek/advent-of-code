@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List
-from aocd import data
+from aocd import data, submit
 
 
 GRID = [list(row) for row in data.splitlines()]
@@ -21,9 +21,17 @@ class Point:
 
     def __add__(self, other) -> tuple[int, int]:
         return Point((self.x + other.x), (self.y + other.y))
-    
-    def in_bounds(self, width_bounds: int, height_bounds: int)-> bool:
-        return self.x < 0 or self.x >= height_bounds or self.y < 0 or self.y >= width_bounds
+
+    def __rmul__(self, other: int):
+        return Point(self.x * other, self.y * other)
+
+    def in_bounds(self, width_bounds: int, height_bounds: int) -> bool:
+        return not (
+            self.x < 0
+            or self.x >= height_bounds
+            or self.y < 0
+            or self.y >= width_bounds
+        )
 
 
 def is_antenna(input: str):
@@ -51,7 +59,17 @@ antinodes = set()
 for frequency in antennas:
     for i in range(len(antennas[frequency]) - 1):
         for j in range(i + 1, len(antennas[frequency])):
-            antenna_a, antenna_b = antennas[frequency][i], antennas[frequency][j]
+            a1, a2 = antennas[frequency][i], antennas[frequency][j]
+
+            k = 1
+            while (antinode := (k * (a1 - a2) + a2)).in_bounds(GRID_WIDTH, GRID_HEIGHT):
+                k += 1
+                antinodes.add(antinode)
+
+            k = 1
+            while (antinode := (k * (a2 - a1) + a1)).in_bounds(GRID_WIDTH, GRID_HEIGHT):
+                k += 1
+                antinodes.add(antinode)
 
 
-print(len(antinodes))
+submit(len(antinodes))
