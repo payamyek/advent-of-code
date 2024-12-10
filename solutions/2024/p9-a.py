@@ -1,47 +1,46 @@
-from aocd import data
-
-FREE_SPACE = "."
-
-data = "2333133121414131402"
+from typing import List
+from aocd import data, submit
 
 
-def disk_map_to_block_map(disk_map: str) -> str:
-    return "".join(
-        [
-            int(char) * FREE_SPACE if index % 2 else int(char) * str(index // 2)
-            for index, char in enumerate(disk_map)
-        ]
-    )
+FREE_SPACE = -1
 
 
-def shift_blocks(block_map: str) -> str:
-    result = list(block_map)
+def disk_map_to_block_map(disk_map: str) -> List[int]:
+    block_map: List[int] = []
 
-    for index, char in reversed(list(enumerate(block_map))):
-        if not char.isdigit():
+    for index, char in enumerate(disk_map):
+        if index % 2:
+            block_map.extend([FREE_SPACE] * int(char))
+        else:
+            block_map.extend([(index // 2)] * int(char))
+
+    return block_map
+
+
+def compute_checksum(block_map: List[int]) -> int:
+    total = 0
+
+    for index, block_id in enumerate(block_map):
+        if block_id != -1:
+            total += index * block_id
             continue
 
-        # leftmost free spot
-        free_block_index = result.index(FREE_SPACE) if FREE_SPACE in result else -1
+        filled_indices = [
+            index for index, block_id in enumerate(block_map) if block_id != -1
+        ]
 
-        # finished sorted
-        if free_block_index >= index:
+        if (
+            not len(filled_indices)
+            or (rightmost_block_index := filled_indices[-1]) <= index
+        ):
             break
 
-        if free_block_index >= 0:
-            result[index] = FREE_SPACE
-            result[free_block_index] = char
-    return "".join(result)
+        total += block_map[rightmost_block_index] * index
+        block_map[rightmost_block_index] = FREE_SPACE
 
-
-def compute_checksum(block_map: str) -> int:
-    return sum(
-        [index * int(char) for index, char in enumerate(block_map) if char.isdigit()]
-    )
+    return total
 
 
 block_map = disk_map_to_block_map(data)
-shifted_block_map = shift_blocks(block_map)
-checksum = compute_checksum(shifted_block_map)
-
-print(checksum)
+checksum = compute_checksum(block_map)
+submit(checksum)
