@@ -1,43 +1,20 @@
 from dataclasses import dataclass
-import math
-from typing import List, Self, Union
-from aocd import data
 import itertools
+from typing import List, Union
+
 
 data = "2333133121414131402"
 
-FREE_SPACE = -1
+FREE_BLOCK = -1
 
 
 @dataclass
 class DiskBlock:
-    span: int
     id: int
-
-    def consume_free_space(self, other: Self) -> List[Self]:
-        if self.id != FREE_SPACE:
-            raise Exception("Disk block is not free")
-
-        if self.span < other.span:
-            raise Exception("Disk block doesn't have enough free space")
-
-        splitted_blocks = []
-
-        self.id = other.id
-
-        if self.span == other.span:
-            other.free()
-            splitted_blocks.append(self)
-        else:
-            free_block = DiskBlock(self.span - other.span, FREE_SPACE)
-            self.span = other.span
-            other.free()
-            splitted_blocks.extend([self, free_block])
-
-        return splitted_blocks
+    size: int
 
     def free(self):
-        self.id = FREE_SPACE
+        self.id = FREE_BLOCK
 
 
 class Disk:
@@ -46,84 +23,103 @@ class Disk:
     def __init__(self, disk_map: str):
         self.blocks = self._to_disk_blocks(disk_map)
 
-    def _disk_map_to_block_map(self, disk_map: str) -> List[int]:
+    def _to_block_map(self) -> List[int]:
+        block_map: List[int] = []
+
+        for block in self.blocks:
+            if block.id == FREE_BLOCK:
+                block_map.extend([FREE_BLOCK] * block.size)
+            else:
+                block_map.extend([block.id] * block.size)
+        return block_map
+
+    def _disk_map_to_block_map_string(self, disk_map: str) -> str:
         block_map: List[int] = []
 
         for index, char in enumerate(disk_map):
             if index % 2:
-                block_map.extend([FREE_SPACE] * int(char))
+                block_map.extend([FREE_BLOCK] * int(char))
             else:
                 block_map.extend([(index // 2)] * int(char))
-
         return block_map
 
-    def _to_disk_blocks(self, disk_map: str) -> List[DiskBlock]:
-        disk_slots = []
-        block_map = self._disk_map_to_block_map(disk_map)
+    def _to_disk_blocks(self, input_map: str, convert=True) -> List[DiskBlock]:
+        block_map = (
+            self._disk_map_to_block_map_string(input_map) if convert else input_map
+        )
 
-        for key, group in itertools.groupby(block_map):
-            span = len(list(group))
-            disk_slots.append(DiskBlock(span, key))
-        return disk_slots
+        return [
+            DiskBlock(id=key, size=len(list(group)))
+            for key, group in itertools.groupby(block_map)
+        ]
 
-    def leftmost_free_disk_block(self, span: int) -> Union[DiskBlock, None]:
-        for disk_slot in self.blocks:
-            if disk_slot.id == FREE_SPACE and disk_slot.span >= span:
-                return disk_slot
+    def _move_block(self, source_block_index: int, target_block_index: int) -> None:
+        source_block, target_block = (
+            self.blocks[source_block_index],
+            self.blocks[target_block_index],
+        )
+
+        if target_block.id != FREE_BLOCK:
+            raise Exception("Target block is not free")
+
+        if target_block.size < source_block.size:
+            raise Exception("Target block doesn't have enough free space")
+
+        # swap blocks of the same size
+        if target_block.size == source_block.size:
+            self.blocks[target_block_index], self.blocks[source_block_index] = (
+                self.blocks[source_block_index],
+                self.blocks[target_block_index],
+            )
+        else:
+            self.blocks.pop(target_block_index)
+
+            self.blocks.insert(
+                target_block_index,
+                DiskBlock(id=FREE_BLOCK, size=target_block.size - source_block.size),
+            )
+
+            self.blocks.insert(
+                target_block_index,
+                DiskBlock(id=source_block.id, size=source_block.size),
+            )
+
+            source_block.free()
+
+        # update blocks
+        self.blocks = self._to_disk_blocks(self._to_block_map(), convert=False)
+
+    def find_compatible_free_block(self, min_size: int) -> Union[int, None]:
+        for index, block in enumerate(self.blocks):
+            if block.size >= min_size:
+                return index
         return None
 
-    def rightmost_disk_block(self, max_id: int) -> Union[DiskBlock, None]:
-        for disk_slot in reversed(self.blocks):
-            if disk_slot.id != FREE_SPACE and disk_slot.id <= max_id:
-                return disk_slot
-        return None
+    def defragment(self) -> None:
+        pass
 
-    def find_block_index(self, disk_block: DiskBlock) -> int:
-        index = -1
-        try:
-            index = disk.blocks.index(disk_block)
-        except ValueError:
-            pass
-        return index
+    def checksum(self) -> int:
+        return sum(
+            [
+                block.id * index
+                for index, block in enumerate(self.blocks)
+                if block.id != FREE_BLOCK
+            ]
+        )
 
-    def fragment(self) -> None:
-        max_block_id = math.inf
-
-        while max_block_id:
-            source_disk_block = self.rightmost_disk_block(max_block_id)
-            target_disk_block = self.leftmost_free_disk_block(source_disk_block.span)
-            max_block_id = source_disk_block.id
-            print(max_block_id, source_disk_block, target_disk_block)
-            print(self)
-
-            if target_disk_block is None:
-                max_block_id -= 1
-                continue
-
-            splitted_blocks = target_disk_block.consume_free_space(source_disk_block)
-            print(splitted_blocks)
-
-            target_disk_block_index = self.find_block_index(target_disk_block)
-            print(target_disk_block_index)
-
-            self.blocks.remove(target_disk_block)
-
-            for splitted_block in reversed(splitted_blocks):
-                self.blocks.insert(target_disk_block_index, splitted_block)
-
-            source_disk_block.free()
-
-    def __str__(self) -> str:
-        result = ""
-        for block in self.blocks:
-            result += block.span * ("." if block.id == -1 else str(block.id))
-        return result
+    def __str__(self):
+        return "".join(
+            map(lambda x: "." if x == FREE_BLOCK else str(x), self._to_block_map())
+        )
 
 
 disk = Disk(data)
+
 print(disk)
 
+free_block = disk.find_compatible_free_block(3)
 
-disk.fragment()
+disk._move_block(4, 1)
 
-# print(disk)
+print()
+print(disk)
