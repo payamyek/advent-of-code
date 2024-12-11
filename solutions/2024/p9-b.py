@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 from typing import List, Self, Union
 from aocd import data
 import itertools
@@ -86,19 +87,28 @@ class Disk:
         return index
 
     def fragment(self) -> None:
-        source_disk_block = self.rightmost_disk_block(len(self.blocks))
-        target_disk_block = self.leftmost_free_disk_block(source_disk_block.span)
+        max_block_id = math.inf
 
-        splitted_blocks = target_disk_block.consume_free_space(source_disk_block)
+        while max_block_id:
+            source_disk_block = self.rightmost_disk_block(max_block_id)
+            target_disk_block = self.leftmost_free_disk_block(source_disk_block.span)
+            max_block_id = source_disk_block.id
+            print(max_block_id, source_disk_block, target_disk_block)
 
-        target_disk_block_index = self.find_block_index(target_disk_block)
+            if target_disk_block is None:
+                max_block_id -= 1
+                continue
 
-        self.blocks.remove(target_disk_block)
+            splitted_blocks = target_disk_block.consume_free_space(source_disk_block)
 
-        for splitted_block in reversed(splitted_blocks):
-            self.blocks.insert(target_disk_block_index, splitted_block)
+            target_disk_block_index = self.find_block_index(target_disk_block)
 
-        source_disk_block.free()
+            self.blocks.remove(target_disk_block)
+
+            for splitted_block in reversed(splitted_blocks):
+                self.blocks.insert(target_disk_block_index, splitted_block)
+
+            source_disk_block.free()
 
     def __str__(self) -> str:
         result = ""
@@ -113,4 +123,4 @@ print(disk)
 
 disk.fragment()
 
-print(disk)
+# print(disk)
