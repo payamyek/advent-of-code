@@ -71,6 +71,12 @@ class Disk:
                 return disk_slot
         return None
 
+    def rightmost_disk_block(self, max_id: int) -> Union[DiskBlock, None]:
+        for disk_slot in reversed(self.blocks):
+            if disk_slot.id != FREE_SPACE and disk_slot.id <= max_id:
+                return disk_slot
+        return None
+
     def find_block_index(self, disk_block: DiskBlock) -> int:
         index = -1
         try:
@@ -79,28 +85,20 @@ class Disk:
             pass
         return index
 
-    def checksum(self) -> int:
-        total = 0
-        index_from_right = 0
+    def fragment(self) -> None:
+        source_disk_block = self.rightmost_disk_block(len(self.blocks))
+        target_disk_block = self.leftmost_free_disk_block(source_disk_block.span)
 
-        # for index, block in reversed(list(enumerate(self.blocks))):
-        #     free_block = self.leftmost_free_disk_block(block.span)
-        #     splitted_blocks = free_block.consume_free_space(block)
+        splitted_blocks = target_disk_block.consume_free_space(source_disk_block)
 
-        #     free_block_index = self.find_block_index(free_block)
-        #     self.blocks.remove(free_block)
+        target_disk_block_index = self.find_block_index(target_disk_block)
 
-        #     if free_block_index == -1:
-        #         break
+        self.blocks.remove(target_disk_block)
 
-        #     for splitted_block in reversed(splitted_blocks):
-        #         self.blocks.insert(free_block_index, splitted_block)
+        for splitted_block in reversed(splitted_blocks):
+            self.blocks.insert(target_disk_block_index, splitted_block)
 
-        #     break
-
-        #     index_from_right += 1
-
-        return total
+        source_disk_block.free()
 
     def __str__(self) -> str:
         result = ""
@@ -110,9 +108,9 @@ class Disk:
 
 
 disk = Disk(data)
+print(disk)
 
-# print(*disk.blocks, sep="\n")
 
-disk.checksum()
+disk.fragment()
 
 print(disk)
