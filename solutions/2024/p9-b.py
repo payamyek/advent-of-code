@@ -84,12 +84,11 @@ class Disk:
         index_from_right = 0
 
         for index, block in reversed(list(enumerate(self.blocks))):
-            print(block)
             free_block = self.leftmost_free_disk_block(block.span)
             splitted_blocks = free_block.consume_free_space(block)
 
-            self.blocks.remove(free_block)
             free_block_index = self.find_block_index(free_block)
+            self.blocks.remove(free_block)
 
             if free_block_index == -1:
                 break
@@ -103,11 +102,17 @@ class Disk:
 
         return total
 
+    def __str__(self) -> str:
+        result = ""
+        for block in self.blocks:
+            result += block.span * ("." if block.value == -1 else str(block.value))
+        return result
+
 
 disk = Disk(data)
 
-print(*disk.blocks, sep="\n")
+# print(*disk.blocks, sep="\n")
 
-print(disk.checksum())
+disk.checksum()
 
-print(*disk.blocks, sep="\n")
+print(disk)
