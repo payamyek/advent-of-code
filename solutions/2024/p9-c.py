@@ -92,8 +92,9 @@ class Disk:
         )
 
     def __str__(self):
-        print("TO BLOCK MAP", self._to_block_map())
-        return "".join(self._to_block_map())
+        return "".join(
+            map(lambda x: "." if x == FREE_BLOCK else str(x), self._to_block_map())
+        )
 
 
 disk = Disk(data)
