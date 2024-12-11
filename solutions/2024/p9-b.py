@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import itertools
+import math
 from typing import List, Union
 
 
@@ -89,14 +90,48 @@ class Disk:
         # update blocks
         self.blocks = self._to_disk_blocks(self._to_block_map(), convert=False)
 
-    def find_compatible_free_block(self, min_size: int) -> Union[int, None]:
+    def _find_free_block(self, min_size: int) -> Union[int, None]:
         for index, block in enumerate(self.blocks):
-            if block.size >= min_size:
+            if block.size >= min_size and block.id == FREE_BLOCK:
+                return index
+        return None
+
+    def _find_rightmost_occupied_block(self, max_id: int) -> Union[int, None]:
+        for index, block in reversed(list(enumerate(self.blocks))):
+            if block.id <= max_id and block.id != FREE_BLOCK:
                 return index
         return None
 
     def defragment(self) -> None:
-        pass
+        source_block_index = self._find_rightmost_occupied_block(math.inf)
+
+        while source_block_index is not None and source_block_index > 0:
+            target_block_index = self._find_free_block(
+                self.blocks[source_block_index].size
+            )
+
+            if target_block_index is None:
+                source_block_index = self._find_rightmost_occupied_block(
+                    self.blocks[source_block_index].id - 1
+                )
+                continue
+
+            print(
+                "[MOVE]",
+                self.blocks[source_block_index],
+                "-> ",
+                self.blocks[target_block_index],
+            )
+
+            self._move_block(source_block_index, target_block_index)
+
+            source_block_index = self._find_rightmost_occupied_block(
+                self.blocks[source_block_index].id - 1
+            )
+
+            # print("NEW SOURCE: ", self.blocks[source_block_index])
+
+        print("Done")
 
     def checksum(self) -> int:
         return sum(
@@ -114,12 +149,6 @@ class Disk:
 
 
 disk = Disk(data)
-
 print(disk)
-
-free_block = disk.find_compatible_free_block(3)
-
-disk._move_block(4, 1)
-
-print()
+disk.defragment()
 print(disk)
