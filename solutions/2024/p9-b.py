@@ -110,20 +110,22 @@ class Disk:
                 self.blocks[source_block_index].size
             )
 
-            if target_block_index is None:
+            if target_block_index is None or target_block_index >= source_block_index:
                 source_block_index = self._find_rightmost_occupied_block(
                     self.blocks[source_block_index].id - 1
                 )
                 continue
-
+            print()
             print(
                 "[MOVE]",
                 self.blocks[source_block_index],
                 "-> ",
                 self.blocks[target_block_index],
             )
+            print()
 
             self._move_block(source_block_index, target_block_index)
+            print(self)
 
             source_block_index = self._find_rightmost_occupied_block(
                 self.blocks[source_block_index].id - 1
@@ -151,4 +153,4 @@ class Disk:
 disk = Disk(data)
 print(disk)
 disk.defragment()
-print(disk)
+# print(disk)
