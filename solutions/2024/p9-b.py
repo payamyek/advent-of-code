@@ -11,10 +11,10 @@ FREE_SPACE = -1
 @dataclass
 class DiskBlock:
     span: int
-    value: int
+    id: int
 
     def consume_free_space(self, other: Self) -> List[Self]:
-        if self.value != FREE_SPACE:
+        if self.id != FREE_SPACE:
             raise Exception("Disk block is not free")
 
         if self.span < other.span:
@@ -22,7 +22,7 @@ class DiskBlock:
 
         splitted_blocks = []
 
-        self.value = other.value
+        self.id = other.id
 
         if self.span == other.span:
             other.free()
@@ -36,7 +36,7 @@ class DiskBlock:
         return splitted_blocks
 
     def free(self):
-        self.value = FREE_SPACE
+        self.id = FREE_SPACE
 
 
 class Disk:
@@ -67,7 +67,7 @@ class Disk:
 
     def leftmost_free_disk_block(self, span: int) -> Union[DiskBlock, None]:
         for disk_slot in self.blocks:
-            if disk_slot.value == FREE_SPACE and disk_slot.span >= span:
+            if disk_slot.id == FREE_SPACE and disk_slot.span >= span:
                 return disk_slot
         return None
 
@@ -83,29 +83,29 @@ class Disk:
         total = 0
         index_from_right = 0
 
-        for index, block in reversed(list(enumerate(self.blocks))):
-            free_block = self.leftmost_free_disk_block(block.span)
-            splitted_blocks = free_block.consume_free_space(block)
+        # for index, block in reversed(list(enumerate(self.blocks))):
+        #     free_block = self.leftmost_free_disk_block(block.span)
+        #     splitted_blocks = free_block.consume_free_space(block)
 
-            free_block_index = self.find_block_index(free_block)
-            self.blocks.remove(free_block)
+        #     free_block_index = self.find_block_index(free_block)
+        #     self.blocks.remove(free_block)
 
-            if free_block_index == -1:
-                break
+        #     if free_block_index == -1:
+        #         break
 
-            for splitted_block in reversed(splitted_blocks):
-                self.blocks.insert(free_block_index, splitted_block)
+        #     for splitted_block in reversed(splitted_blocks):
+        #         self.blocks.insert(free_block_index, splitted_block)
 
-            break
+        #     break
 
-            index_from_right += 1
+        #     index_from_right += 1
 
         return total
 
     def __str__(self) -> str:
         result = ""
         for block in self.blocks:
-            result += block.span * ("." if block.value == -1 else str(block.value))
+            result += block.span * ("." if block.id == -1 else str(block.id))
         return result
 
 
