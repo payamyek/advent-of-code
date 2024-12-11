@@ -23,9 +23,6 @@ class Disk:
     def __init__(self, disk_map: str):
         self.blocks = self._to_disk_blocks(disk_map)
 
-    def defragment(self) -> None:
-        pass
-
     def _to_block_map(self) -> List[int]:
         block_map: List[int] = []
 
@@ -36,7 +33,7 @@ class Disk:
                 block_map.extend([block.id] * block.size)
         return block_map
 
-    def _disk_map_to_block_map(self, disk_map: str) -> str:
+    def _disk_map_to_block_map_string(self, disk_map: str) -> str:
         block_map: List[int] = []
 
         for index, char in enumerate(disk_map):
@@ -47,7 +44,9 @@ class Disk:
         return block_map
 
     def _to_disk_blocks(self, input_map: str, convert=True) -> List[DiskBlock]:
-        block_map = self._disk_map_to_block_map(input_map) if convert else input_map
+        block_map = (
+            self._disk_map_to_block_map_string(input_map) if convert else input_map
+        )
 
         return [
             DiskBlock(id=key, size=len(list(group)))
@@ -81,6 +80,9 @@ class Disk:
             if block.size >= min_size:
                 return index
         return None
+
+    def defragment(self) -> None:
+        pass
 
     def checksum(self) -> int:
         return sum(
