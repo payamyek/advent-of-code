@@ -2,9 +2,7 @@ from dataclasses import dataclass
 import itertools
 import math
 from typing import List, Union
-
-
-data = "2333133121414131402"
+from aocd import data
 
 FREE_BLOCK = -1
 
@@ -90,59 +88,51 @@ class Disk:
         # update blocks
         self.blocks = self._to_disk_blocks(self._to_block_map(), convert=False)
 
-    def _find_free_block(self, min_size: int) -> Union[int, None]:
+    def _lfind_free_block(self, min_size: int) -> Union[int, None]:
         for index, block in enumerate(self.blocks):
             if block.size >= min_size and block.id == FREE_BLOCK:
                 return index
         return None
 
-    def _find_rightmost_occupied_block(self, max_id= math.inf) -> Union[int, None]:
+    def _rfind_occupied_block(self, max_id=math.inf) -> Union[int, None]:
         for index, block in reversed(list(enumerate(self.blocks))):
             if block.id <= max_id and block.id != FREE_BLOCK:
                 return index
         return None
 
     def defragment(self) -> None:
-        source_block_index = self._find_rightmost_occupied_block()
+        source_block_index = self._rfind_occupied_block()
 
         while source_block_index is not None and source_block_index > 0:
-            target_block_index = self._find_free_block(
+            target_block_index = self._lfind_free_block(
                 self.blocks[source_block_index].size
             )
 
             if target_block_index is None or target_block_index >= source_block_index:
-                source_block_index = self._find_rightmost_occupied_block(
+                source_block_index = self._rfind_occupied_block(
                     self.blocks[source_block_index].id - 1
                 )
                 continue
-            print()
-            print(
-                "[MOVE]",
-                self.blocks[source_block_index],
-                "-> ",
-                self.blocks[target_block_index],
-            )
-            print()
+
+            current_id = self.blocks[source_block_index].id
 
             self._move_block(source_block_index, target_block_index)
-            print(self)
 
-            source_block_index = self._find_rightmost_occupied_block(
-                self.blocks[source_block_index].id - 1
-            )
-
-            # print("NEW SOURCE: ", self.blocks[source_block_index])
-
-        print("Done")
+            source_block_index = self._rfind_occupied_block(current_id - 1)
 
     def checksum(self) -> int:
-        return sum(
-            [
-                block.id * index
-                for index, block in enumerate(self.blocks)
-                if block.id != FREE_BLOCK
-            ]
-        )
+        index = 0
+        total = 0
+
+        for block in self.blocks:
+            if block.id == FREE_BLOCK:
+                index += block.size
+                continue
+
+            for _ in range(block.size):
+                total += index * block.id
+                index += 1
+        return total
 
     def __str__(self):
         return "".join(
@@ -151,6 +141,6 @@ class Disk:
 
 
 disk = Disk(data)
-print(disk)
 disk.defragment()
-# print(disk)
+
+print(disk.checksum())
