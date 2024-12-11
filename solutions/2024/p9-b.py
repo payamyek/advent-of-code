@@ -94,14 +94,17 @@ class Disk:
             target_disk_block = self.leftmost_free_disk_block(source_disk_block.span)
             max_block_id = source_disk_block.id
             print(max_block_id, source_disk_block, target_disk_block)
+            print(self)
 
             if target_disk_block is None:
                 max_block_id -= 1
                 continue
 
             splitted_blocks = target_disk_block.consume_free_space(source_disk_block)
+            print(splitted_blocks)
 
             target_disk_block_index = self.find_block_index(target_disk_block)
+            print(target_disk_block_index)
 
             self.blocks.remove(target_disk_block)
 
