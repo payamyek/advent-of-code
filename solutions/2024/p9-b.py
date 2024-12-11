@@ -96,14 +96,14 @@ class Disk:
                 return index
         return None
 
-    def _find_rightmost_occupied_block(self, max_id: int) -> Union[int, None]:
+    def _find_rightmost_occupied_block(self, max_id= math.inf) -> Union[int, None]:
         for index, block in reversed(list(enumerate(self.blocks))):
             if block.id <= max_id and block.id != FREE_BLOCK:
                 return index
         return None
 
     def defragment(self) -> None:
-        source_block_index = self._find_rightmost_occupied_block(math.inf)
+        source_block_index = self._find_rightmost_occupied_block()
 
         while source_block_index is not None and source_block_index > 0:
             target_block_index = self._find_free_block(
