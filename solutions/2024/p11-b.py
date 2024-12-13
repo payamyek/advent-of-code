@@ -1,8 +1,6 @@
 from typing import List
 from functools import cache
-
 from aocd import data, submit
-
 
 N = 75
 
