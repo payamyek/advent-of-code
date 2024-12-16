@@ -60,7 +60,7 @@ def bfs(s: Vertex) -> set[Vertex]:
     return discovered
 
 
-def find_all_regions() -> List[set[Vertex]]:
+def find_regions() -> List[set[Vertex]]:
     visited_vertices = set()
     regions: List[set[Vertex]] = []
     vertices = set(
@@ -100,8 +100,7 @@ def fence_cost(region: set[Vertex]) -> int:
     return len(region) * sides
 
 
-regions = find_all_regions()
-
+regions = find_regions()
 total_cost = sum([fence_cost(region) for region in regions])
 
 print(total_cost)
