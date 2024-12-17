@@ -15,12 +15,17 @@ GRID = [list(row) for row in data.splitlines()]
 GRID_HEIGHT = len(GRID)
 GRID_WIDTH = len(GRID[0])
 
+vertex_to_grid_vertices = dict()
+
 
 @dataclass(frozen=True)
 class Vertex:
     row: int
     col: int
     plant: str
+
+    def __post_init__(self):
+        vertex_to_grid_vertices[self] = to_grid_vertices(self)
 
 
 @dataclass(frozen=True)
@@ -94,9 +99,15 @@ def fence_cost(region: set[Vertex]) -> int:
     for vertex in region:
         grid_vertices.extend(to_grid_vertices(vertex))
 
-    sides = len(
-        {key for key, value in Counter(grid_vertices).items() if value in [1, 3]}
-    )
+    sides = 0
+
+    for grid_vertex, count in Counter(grid_vertices).items():
+        if count in [1, 3]:
+            sides += 1
+        elif count == 2:
+            pass
+
+
     return len(region) * sides
 
 
