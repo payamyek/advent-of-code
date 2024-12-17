@@ -79,7 +79,7 @@ def find_regions() -> List[set[Vertex]]:
     return regions
 
 
-def compute_grid_vertices(v: Vertex) -> set[GridVertex]:
+def to_grid_vertices(v: Vertex) -> set[GridVertex]:
     return (
         GridVertex(v.row, v.col),
         GridVertex(v.row, v.col + 1),
@@ -92,7 +92,7 @@ def fence_cost(region: set[Vertex]) -> int:
     grid_vertices: list[GridVertex] = []
 
     for vertex in region:
-        grid_vertices.extend(compute_grid_vertices(vertex))
+        grid_vertices.extend(to_grid_vertices(vertex))
 
     sides = len(
         {key for key, value in Counter(grid_vertices).items() if value in [1, 3]}
