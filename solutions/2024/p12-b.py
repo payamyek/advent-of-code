@@ -1,21 +1,18 @@
 from dataclasses import dataclass
 from typing import List
-from aocd import data
+from aocd import data, submit
 from collections import Counter
 
-data = """AAAAAA
-AAABBA
-AAABBA
-ABBAAA
-ABBAAA
-AAAAAA"""
+# data = """EEEEE
+# EXXXX
+# EEEEE
+# EXXXX
+# EEEEE"""
 
 
 GRID = [list(row) for row in data.splitlines()]
 GRID_HEIGHT = len(GRID)
 GRID_WIDTH = len(GRID[0])
-
-vertex_to_grid_vertices = dict()
 
 
 @dataclass(frozen=True)
@@ -25,13 +22,20 @@ class Vertex:
     plant: str
 
     def __post_init__(self):
-        vertex_to_grid_vertices[self] = to_grid_vertices(self)
+        for gv in to_grid_vertices(self):
+            if grid_vertices_to_vertices.get(gv) is None:
+                grid_vertices_to_vertices[gv] = set([self])
+            else:
+                grid_vertices_to_vertices[gv].add(self)
 
 
 @dataclass(frozen=True)
 class GridVertex:
     row: int
     col: int
+
+
+grid_vertices_to_vertices: dict[GridVertex, set[Vertex]] = dict()
 
 
 def neighbours(v: Vertex) -> List[Vertex]:
@@ -105,8 +109,15 @@ def fence_cost(region: set[Vertex]) -> int:
         if count in [1, 3]:
             sides += 1
         elif count == 2:
-            pass
+            plant = next(iter(region)).plant
+            v1, v2 = list(
+                filter(
+                    lambda x: x.plant == plant, grid_vertices_to_vertices[grid_vertex]
+                )
+            )
 
+            if abs(v1.row - v2.row) == 1 and abs(v1.col - v2.col) == 1:
+                sides += 2
 
     return len(region) * sides
 
@@ -114,4 +125,4 @@ def fence_cost(region: set[Vertex]) -> int:
 regions = find_regions()
 total_cost = sum([fence_cost(region) for region in regions])
 
-print(total_cost)
+submit(total_cost)
