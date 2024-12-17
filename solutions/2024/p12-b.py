@@ -3,13 +3,6 @@ from typing import List
 from aocd import data, submit
 from collections import Counter
 
-# data = """EEEEE
-# EXXXX
-# EEEEE
-# EXXXX
-# EEEEE"""
-
-
 GRID = [list(row) for row in data.splitlines()]
 GRID_HEIGHT = len(GRID)
 GRID_WIDTH = len(GRID[0])
@@ -21,6 +14,7 @@ class Vertex:
     col: int
     plant: str
 
+    # UPDATE GLOBAL VARIABLE TO TRACK GRIDVERTEX -> VERTEX MAPPING
     def __post_init__(self):
         for gv in to_grid_vertices(self):
             if grid_vertices_to_vertices.get(gv) is None:
@@ -35,6 +29,7 @@ class GridVertex:
     col: int
 
 
+# MAPS EACH GRID VERTEX TO ALL VERTICES IT TOUCHES
 grid_vertices_to_vertices: dict[GridVertex, set[Vertex]] = dict()
 
 
@@ -106,16 +101,21 @@ def fence_cost(region: set[Vertex]) -> int:
     sides = 0
 
     for grid_vertex, count in Counter(grid_vertices).items():
+        # ALL GRID VERTICES WITH 1 OR 3 INTERSECTIONS ARE SIDES
         if count in [1, 3]:
             sides += 1
+        # GRID VERTICES WITH 2 INTERSECTIONS MIGHT BE SIDES
         elif count == 2:
             plant = next(iter(region)).plant
+
+            # VERTICES WITH SAME PLANT TYPE
             v1, v2 = list(
                 filter(
                     lambda x: x.plant == plant, grid_vertices_to_vertices[grid_vertex]
                 )
             )
 
+            # VERTICES ARE DIAGONAL NEIGHBOURS
             if abs(v1.row - v2.row) == 1 and abs(v1.col - v2.col) == 1:
                 sides += 2
 
@@ -124,5 +124,4 @@ def fence_cost(region: set[Vertex]) -> int:
 
 regions = find_regions()
 total_cost = sum([fence_cost(region) for region in regions])
-
 submit(total_cost)
