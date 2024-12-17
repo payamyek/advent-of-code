@@ -41,6 +41,7 @@ class Robot:
 
     def move(self, n: int):
         new_position = n * self.position
+        self.position = Vector(new_position.x % WIDTH, new_position % HEIGHT)
 
 
 def _create_robots() -> List[Robot]:
