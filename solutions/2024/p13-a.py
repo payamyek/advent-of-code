@@ -1,25 +1,9 @@
 from dataclasses import astuple, dataclass
 import re
 from typing import List
-from aocd import data
+from aocd import data, submit
 from sympy import Matrix, Symbol, solve_linear_system
 from sympy.abc import x, y
-
-data = """Button A: X+94, Y+34
-Button B: X+22, Y+67
-Prize: X=8400, Y=5400
-
-Button A: X+26, Y+66
-Button B: X+67, Y+21
-Prize: X=12748, Y=12176
-
-Button A: X+17, Y+86
-Button B: X+84, Y+37
-Prize: X=7870, Y=6450
-
-Button A: X+69, Y+23
-Button B: X+27, Y+71
-Prize: X=18641, Y=1027"""
 
 
 @dataclass(frozen=True)
@@ -67,4 +51,14 @@ def _create_linear_systems() -> List[LinearSystem]:
     return systems
 
 
+def _required_tokens(result: dict[Symbol, int]) -> int:
+    if not len(result) or not result[x].is_integer or not result[y].is_integer:
+        return 0
+    return int(3 * result[x] + result[y])
+
+
 linear_systems = _create_linear_systems()
+
+tokens = sum([_required_tokens(system.solve()) for system in linear_systems])
+
+submit(tokens)
