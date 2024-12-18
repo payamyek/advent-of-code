@@ -1,25 +1,19 @@
 from dataclasses import dataclass
 import re
 from typing import List, Self
-from aocd import data
+from aocd import data, submit
 
-WIDTH = 11
-HEIGHT = 7
+WIDTH = 101
+HEIGHT = 103
 SECONDS = 100
 
-data = """p=0,4 v=3,-3
-p=6,3 v=-1,-3
-p=10,3 v=-1,2
-p=2,0 v=2,-1
-p=0,0 v=1,3
-p=3,0 v=-2,-2
-p=7,6 v=-1,-3
-p=3,0 v=-1,-2
-p=9,3 v=2,3
-p=7,3 v=-1,2
-p=2,4 v=2,-3
-p=9,5 v=-3,-3
-"""
+# split horizontally
+# split vertically
+
+Q1_X, Q1_Y = (0, WIDTH // 2), (0, HEIGHT // 2)
+Q2_X, Q2_Y = (WIDTH - WIDTH // 2, WIDTH), (0, HEIGHT // 2)
+Q3_X, Q3_Y = (0, WIDTH // 2), (HEIGHT - HEIGHT // 2, HEIGHT)
+Q4_X, Q4_Y = (WIDTH - WIDTH // 2, WIDTH), (HEIGHT - HEIGHT // 2, HEIGHT)
 
 
 @dataclass(frozen=True)
@@ -57,9 +51,36 @@ def _create_robots() -> List[Robot]:
     return robots
 
 
+def _num_of_robots_in_quadrant(
+    robots: List[Robot], x_bounds: tuple[int, int], y_bounds: tuple[int, int]
+) -> int:
+    total = 0
+
+    x_min, x_max = x_bounds
+    y_min, y_max = y_bounds
+
+    for robot in robots:
+        if (
+            robot.position.x >= x_min
+            and robot.position.x < x_max
+            and robot.position.y >= y_min
+            and robot.position.y < y_max
+        ):
+            total += 1
+    return total
+
+
 robots = _create_robots()
 
 for robot in robots:
     robot.move()
 
-print(*robots, sep="\n")
+total = (
+    _num_of_robots_in_quadrant(robots, Q1_X, Q1_Y)
+    * _num_of_robots_in_quadrant(robots, Q2_X, Q2_Y)
+    * _num_of_robots_in_quadrant(robots, Q3_X, Q3_Y)
+    * _num_of_robots_in_quadrant(robots, Q4_X, Q4_Y)
+)
+
+
+submit(total)
