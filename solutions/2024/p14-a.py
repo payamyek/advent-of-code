@@ -7,8 +7,6 @@ WIDTH = 101
 HEIGHT = 103
 SECONDS = 100
 
-# split horizontally
-# split vertically
 
 Q1_X, Q1_Y = (0, WIDTH // 2), (0, HEIGHT // 2)
 Q2_X, Q2_Y = (WIDTH - WIDTH // 2, WIDTH), (0, HEIGHT // 2)
