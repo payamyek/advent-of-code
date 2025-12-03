@@ -34,7 +34,6 @@ total = 0
 for range_str in data:
     for id_str in enumerate_all_ids(range_str):
         if is_invalid(id_str):
-            print(f"Adding: {id_str}")
             total += int(id_str)
 
 submit(total)
