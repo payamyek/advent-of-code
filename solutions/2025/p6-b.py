@@ -41,12 +41,9 @@ def solve():
     for item in sequence[::-1]:
         if item == ADD:
             total += accumulator
-            # print(accumulator)
             accumulator = 0
             active_operator = ADD
         elif item == MULTIPLY:
-            total += accumulator
-            # print(accumulator)
             accumulator = 1
             active_operator = MULTIPLY
         elif active_operator == ADD:
