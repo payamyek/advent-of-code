@@ -1,37 +1,43 @@
+from collections import namedtuple
+from typing import List
 from aocd import data, submit
 
 LEFT = "L"
 RIGHT = "R"
+STARTING_DIAL_POS = 50
 DIALS = 100
 
-data = data.split()
-# data = ["L68", "L30", "R48", "L5", "R60", "L55", "L1", "L99", "R14", "L82"]
 
-# Dials -> 0..99
-# R -> higher number
-# L -> lower number
-# Q? How many times does it past zero?
+Rotation = namedtuple("Rotation", "direction units")
 
-dial_pos = 50
-count = 0
-
-for rotation in data:
-    direction = rotation[0]
-    units = int(rotation[1:])
-
-    count += abs((dial_pos + units) // DIALS)
-
-    # print(abs((dial_pos + units) // DIALS))
-
-    if direction == RIGHT:
-        dial_pos = (units + dial_pos) % DIALS
-    else:
-        dial_pos = (-units + dial_pos) % DIALS
-
-    # if dial_pos == 0:
-    #     count += 1
-    #     print("y0")
-    # print()
+data: List[Rotation] = [Rotation(item[0], int(item[1:])) for item in data.split()]
 
 
-submit(count)
+def move(rotation: Rotation, dial_pos: int):
+    return (rotation.units * (-1 if rotation.direction == LEFT else 1) + dial_pos) % 100
+
+
+def solve() -> int:
+    total = 0
+    cur_pos = STARTING_DIAL_POS
+
+    for rotation in data:
+        next_pos = move(rotation, cur_pos)
+
+        total += rotation.units // DIALS
+        transformed_rotation = Rotation(rotation.direction, rotation.units % DIALS)
+
+        if transformed_rotation.units <= DIALS and cur_pos != 0:
+            if next_pos == 0:
+                total += 1
+            elif transformed_rotation.direction == LEFT and next_pos >= cur_pos:
+                total += 1
+            elif transformed_rotation.direction == RIGHT and next_pos <= cur_pos:
+                total += 1
+
+        cur_pos = next_pos
+
+    return total
+
+
+submit(solve())
